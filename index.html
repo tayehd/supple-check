@@ -23,7 +23,7 @@
   .lead{font-size:13px; color:var(--ink2); margin-top:6px;}
   .disc{font-size:11px; color:var(--ink3); margin-top:8px; line-height:1.5;}
 
-  .progress{position:sticky; top:0; z-index:5; background:var(--bg); padding:12px 0 10px; margin:14px 0 4px;}
+  .progress{position:sticky; top:0; z-index:5; background:var(--bg); padding:12px 0 10px; margin:14px 0 8px;}
   .pbar{height:8px; background:var(--line); border-radius:999px; overflow:hidden;}
   .pfill{height:100%; width:0; background:linear-gradient(90deg,#8779D6,#6A5BD0); border-radius:999px; transition:width .3s;}
   .pcount{font-size:12px; color:var(--ink2); font-weight:700; margin-top:6px; text-align:center;}
@@ -31,9 +31,9 @@
   .group{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:14px 16px;
     margin-bottom:14px; box-shadow:var(--shadow-sm);}
   .ghead{display:flex; align-items:center; gap:10px; margin-bottom:4px;}
-  .gtile{width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:18px; flex:none;}
+  .gtile{width:34px; height:34px; border-radius:11px; background:var(--v50); display:flex; align-items:center; justify-content:center; font-size:18px; flex:none;}
   .gname{font-size:15px; font-weight:800;}
-  .item{display:flex; align-items:center; gap:12px; padding:10px 4px; cursor:pointer; border-radius:12px;}
+  .item{display:flex; align-items:center; gap:12px; padding:11px 4px; cursor:pointer; border-radius:12px;}
   .item:active{background:var(--v50);}
   .box{width:24px; height:24px; border-radius:8px; border:2px solid var(--line); flex:none;
     display:flex; align-items:center; justify-content:center; transition:.12s;}
@@ -42,7 +42,6 @@
   .item.on .box svg{opacity:1;}
   .item .txt{font-size:14px; font-weight:500;}
   .item.on .txt{color:var(--ink); font-weight:700;}
-  .item .key{margin-left:auto; font-size:10px; font-weight:800; color:#C0556B; background:#FBE9EC; border-radius:999px; padding:2px 7px; flex:none;}
 
   .btnrow{display:flex; gap:10px; margin:6px 0 20px;}
   .btn{flex:1; border:none; border-radius:14px; padding:15px; font-family:inherit; font-size:15px; font-weight:800; cursor:pointer;}
@@ -60,7 +59,7 @@
 
   .rcard{border-radius:18px; padding:15px 16px; margin-bottom:12px; border:1px solid var(--line);}
   .rcard .rh{display:flex; align-items:center; gap:9px; margin-bottom:8px;}
-  .rcard .rh .gtile{width:30px; height:30px; border-radius:10px; font-size:16px;}
+  .rcard .rh .gtile{width:30px; height:30px; border-radius:10px; font-size:16px; background:#fff;}
   .rcard .rn{font-size:15px; font-weight:800;}
   .meter{margin-left:auto; display:flex; align-items:center; gap:6px;}
   .meter .dots{display:flex; gap:3px;}
@@ -79,7 +78,6 @@
   .combo li{font-size:13px; color:var(--ink2); margin-left:18px; margin-bottom:4px;}
   .combo .fine{font-size:11.5px; color:var(--ink3); margin-top:12px; line-height:1.5;}
   footer{text-align:center; font-size:11px; color:var(--ink3); margin-top:24px; line-height:1.6;}
-  .legend{font-size:11px; color:var(--ink3); text-align:center; margin:-2px 0 12px;}
 </style>
 </head>
 <body>
@@ -87,7 +85,7 @@
 
   <header>
     <h1>たりてないサプリ診断</h1>
-    <p class="lead">当てはまるものにチェック。あなたが“削れてるかも”な栄養と、目安の量まで出します。</p>
+    <p class="lead">最近の自分に当てはまる症状にチェック。<br>あなたに“足りてないかも”な栄養と、飲む量まで出します。</p>
     <p class="disc">※これは病気の診断ではなく、あくまで「栄養の目安」です。<br>気になる症状がある人・薬を飲んでいる人は、自己判断せず専門家（医師・薬剤師）に相談してください。</p>
   </header>
 
@@ -95,7 +93,6 @@
     <div class="pbar"><div class="pfill" id="pfill"></div></div>
     <div class="pcount" id="pcount">チェック 0 個</div>
   </div>
-  <p class="legend">🔑 マークは「その栄養を強く疑うサイン」（重みが大きい項目）</p>
 
   <div id="groups"></div>
 
@@ -116,111 +113,100 @@
 </div>
 
 <script>
-  // w:2 = その栄養を強く示す“決定的サイン”、w:1 = 一般的なサイン
-  const DATA = [
+  // 栄養（結果用メタ）
+  const NUTR = [
     { key:'iron', name:'鉄（フェリチン）', emoji:'🔋', color:'#C0556B', bg:'#FBE9EC',
       dose:'1日1粒が目安（"低い人限定"。鉄は摂りすぎ注意）。',
       take:'鉄（フェリチン）が削れてるかも。',
-      tip:'ビタミンCと一緒に／コーヒー・お茶は2時間あける。摂りすぎ注意なので、できれば血液検査でフェリチン確認を。',
-      items:[
-        {t:'疲れやすい・だるさが抜けない',w:1},
-        {t:'立ちくらみ・めまいがある',w:1},
-        {t:'顔色が悪いと言われる',w:1},
-        {t:'階段や坂で動悸・息切れ',w:1},
-        {t:'氷を無性に食べたくなる',w:2},
-        {t:'爪が割れやすい・反り返る',w:2},
-        {t:'生理が重い（経血が多い・長い）',w:1},
-        {t:'肉や魚をあまり食べない',w:1},
-      ]},
+      tip:'ビタミンCと一緒に／コーヒー・お茶は2時間あける。摂りすぎ注意なので、できれば血液検査でフェリチン確認を。' },
     { key:'zinc', name:'亜鉛', emoji:'🛡️', color:'#4F76C0', bg:'#E7EDF9',
       dose:'1日1粒が目安。長く続けるなら銅入りを。',
       take:'亜鉛が削れてるかも。',
-      tip:'鉄・カルシウムと時間をずらすと吸収が落ちない。',
-      items:[
-        {t:'風邪をひきやすい・治りにくい',w:1},
-        {t:'傷や肌荒れの治りが遅い',w:1},
-        {t:'味やにおいが鈍くなった',w:2},
-        {t:'抜け毛が増えた・爪が弱い',w:1},
-        {t:'肌が荒れやすい・湿疹が出る',w:1},
-        {t:'やる気・活力が出にくい',w:1},
-        {t:'お酒をよく飲む',w:1},
-        {t:'運動でよく汗をかく',w:1},
-      ]},
+      tip:'鉄・カルシウムと時間をずらすと吸収が落ちない。' },
     { key:'vd', name:'ビタミンD', emoji:'☀️', color:'#E0A45A', bg:'#FBF0DF',
       dose:'1日1粒が目安。',
       take:'ビタミンDが削れてるかも。',
-      tip:'マグネシウムと一緒だと活きる。脂溶性なので食事と一緒に。',
-      items:[
-        {t:'日に当たる時間がほぼない',w:1},
-        {t:'室内で1日が終わる生活',w:1},
-        {t:'冬になると一気にだるい・落ちる',w:2},
-        {t:'気分が落ち込みやすい',w:1},
-        {t:'骨や筋肉がだるい・痛む',w:1},
-        {t:'疲れやすい・風邪をひきやすい',w:1},
-      ]},
+      tip:'マグネシウムと一緒だと活きる。脂溶性なので食事と一緒に。' },
     { key:'mg', name:'マグネシウム', emoji:'🌙', color:'#6A5BD0', bg:'#ECE9FA',
       dose:'1日1粒が目安（寝る前に）。',
       take:'マグネシウム（＋B6）が削れてるかも。',
-      tip:'寝る前に。酸化Mgはお腹がゆるくなりがち。',
-      items:[
-        {t:'寝つきが悪い',w:1},
-        {t:'イライラ・気が休まらない',w:1},
-        {t:'まぶたや筋肉がピクピクする',w:2},
-        {t:'こむら返りになりやすい',w:2},
-        {t:'足がムズムズして眠れない',w:1},
-        {t:'便秘がち',w:1},
-        {t:'ストレス・カフェインが多い',w:1},
-      ]},
+      tip:'寝る前に。酸化Mgはお腹がゆるくなりがち。' },
     { key:'b', name:'ビタミンB群', emoji:'💊', color:'#AE5BA6', bg:'#F6E9F4',
       dose:'1日2粒が目安（チョコラBBプラスは朝晩1錠ずつ）。',
       take:'ビタミンB群（チョコラBB枠）が削れてるかも。',
-      tip:'地味だけど体感が出やすい枠。口内炎が減るだけで一日がラクに。',
-      items:[
-        {t:'口内炎ができやすい',w:2},
-        {t:'口角が切れる',w:2},
-        {t:'肌や粘膜が荒れがち',w:1},
-        {t:'疲れやすい',w:1},
-        {t:'お酒をよく飲む',w:1},
-        {t:'糖質・加工食品が多い',w:1},
-      ]},
+      tip:'地味だけど体感が出やすい枠。口内炎が減るだけで一日がラクに。' },
     { key:'o3', name:'オメガ3（EPA・DHA）', emoji:'🐟', color:'#3FA593', bg:'#E1F1EE',
       dose:'1日1〜2粒が目安（食事と一緒に）。',
       take:'オメガ3が削れてるかも。',
-      tip:'実は一番研究がある枠。食事と一緒に。',
-      items:[
-        {t:'魚をほとんど食べない',w:2},
-        {t:'外食・コンビニ中心',w:1},
-        {t:'肌が乾燥しやすい',w:1},
-        {t:'気分の波がある',w:1},
-      ]},
+      tip:'実は一番研究がある枠。食事と一緒に。' },
+  ];
+  const NMAP = Object.fromEntries(NUTR.map(n => [n.key, n]));
+
+  // 症状（栄養名は出さない。map = どの栄養に効くか・重み。2=決定的サイン）
+  const SYMPTOMS = [
+    // からだ
+    { t:'疲れやすい・だるさが抜けない', g:'からだ', map:{iron:1, vd:1, b:1} },
+    { t:'立ちくらみ・めまいがある',     g:'からだ', map:{iron:1} },
+    { t:'顔色が悪いと言われる',         g:'からだ', map:{iron:1} },
+    { t:'氷を無性に食べたくなる',       g:'からだ', map:{iron:2} },
+    { t:'爪が割れやすい・反り返る',     g:'からだ', map:{iron:2, zinc:1} },
+    { t:'風邪をひきやすい・治りにくい', g:'からだ', map:{zinc:1, vd:1} },
+    { t:'傷や肌荒れの治りが遅い',       g:'からだ', map:{zinc:1} },
+    { t:'味やにおいが鈍くなった',       g:'からだ', map:{zinc:2} },
+    { t:'抜け毛が増えた',               g:'からだ', map:{iron:1, zinc:1} },
+    { t:'口内炎ができやすい',           g:'からだ', map:{b:2} },
+    { t:'口角が切れる',                 g:'からだ', map:{b:2} },
+    { t:'まぶたや筋肉がピクピクする',   g:'からだ', map:{mg:2} },
+    { t:'こむら返りになりやすい',       g:'からだ', map:{mg:2} },
+    { t:'便秘がち',                     g:'からだ', map:{mg:1} },
+    // きもち・あたま
+    { t:'寝つきが悪い',                 g:'きもち・あたま', map:{mg:1} },
+    { t:'足がムズムズして眠れない',     g:'きもち・あたま', map:{iron:1, mg:1} },
+    { t:'イライラ・気が休まらない',     g:'きもち・あたま', map:{mg:1} },
+    { t:'気分が落ち込みやすい',         g:'きもち・あたま', map:{vd:1, o3:1, b:1} },
+    { t:'やる気・活力が出ない',         g:'きもち・あたま', map:{zinc:1, iron:1} },
+    { t:'気分の波がある',               g:'きもち・あたま', map:{o3:1} },
+    // せいかつ・食事
+    { t:'魚をほとんど食べない',         g:'せいかつ', map:{o3:2} },
+    { t:'肉をあまり食べない',           g:'せいかつ', map:{iron:1, zinc:1} },
+    { t:'外食・コンビニ中心',           g:'せいかつ', map:{o3:1, b:1} },
+    { t:'お酒をよく飲む',               g:'せいかつ', map:{zinc:1, mg:1, b:1} },
+    { t:'日に当たる時間がほぼない',     g:'せいかつ', map:{vd:2} },
+    { t:'冬になると一気にだるい・落ちる', g:'せいかつ', map:{vd:2} },
+    { t:'生理が重い（経血が多い・長い）', g:'せいかつ', map:{iron:1} },
+    { t:'運動でよく汗をかく',           g:'せいかつ', map:{zinc:1, mg:1} },
+  ];
+  const GROUPS = [
+    { g:'からだ', emoji:'🫀' },
+    { g:'きもち・あたま', emoji:'🧠' },
+    { g:'せいかつ', emoji:'🍽️' },
   ];
 
-  const checked = {};
-  DATA.forEach(d => checked[d.key] = new Set());
+  const checked = new Set();
 
-  const groups = document.getElementById('groups');
-  DATA.forEach(d => {
-    const g = document.createElement('div');
-    g.className = 'group';
-    g.innerHTML = `<div class="ghead"><span class="gtile" style="background:${d.bg}">${d.emoji}</span><span class="gname">${d.name}</span></div>`;
-    d.items.forEach((it, i) => {
+  const groupsEl = document.getElementById('groups');
+  GROUPS.forEach(grp => {
+    const card = document.createElement('div');
+    card.className = 'group';
+    card.innerHTML = `<div class="ghead"><span class="gtile">${grp.emoji}</span><span class="gname">${grp.g}</span></div>`;
+    SYMPTOMS.forEach((sym, i) => {
+      if (sym.g !== grp.g) return;
       const row = document.createElement('div');
       row.className = 'item';
-      row.innerHTML = `<span class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span><span class="txt">${it.t}</span>${it.w>1?'<span class="key">🔑</span>':''}`;
+      row.innerHTML = `<span class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span><span class="txt">${sym.t}</span>`;
       row.onclick = () => {
-        if (checked[d.key].has(i)) { checked[d.key].delete(i); row.classList.remove('on'); }
-        else { checked[d.key].add(i); row.classList.add('on'); }
+        if (checked.has(i)) { checked.delete(i); row.classList.remove('on'); }
+        else { checked.add(i); row.classList.add('on'); }
         updateProgress();
       };
-      g.appendChild(row);
+      card.appendChild(row);
     });
-    groups.appendChild(g);
+    groupsEl.appendChild(card);
   });
 
-  const total = DATA.reduce((s,d)=>s+d.items.length,0);
   function updateProgress(){
-    const n = DATA.reduce((s,d)=>s+checked[d.key].size,0);
-    document.getElementById('pfill').style.width = (n/total*100) + '%';
+    const n = checked.size;
+    document.getElementById('pfill').style.width = (n/SYMPTOMS.length*100) + '%';
     document.getElementById('pcount').textContent = `チェック ${n} 個`;
   }
 
@@ -252,7 +238,7 @@
       + `<p class="fine">チェックした栄養に関係するものだけ出してます。量は製品ごとに違うので、パッケージの「1日の目安量」に従ってください。<br><b style="color:var(--v700)">💊 薬を飲んでいる人は、サプリとの飲み合わせを必ず主治医・薬剤師に確認してください。</b></p>`;
   }
 
-  // “高め”は🔑決定的サインがある時だけ＝何でも高めにならないように
+  // “高め”は決定的サイン（重み2）がある時だけ＝何でも高めにならない
   function levelOf(ratio, hasKey){
     if (ratio >= 0.6 && hasKey) return { n:3, label:'高め' };
     if (ratio >= 0.35 || hasKey) return { n:2, label:'中くらい' };
@@ -260,10 +246,15 @@
   }
 
   document.getElementById('go').onclick = () => {
-    const scored = DATA.map(d => {
+    const scored = NUTR.map(nu => {
       let s = 0, max = 0, hasKey = false;
-      d.items.forEach((it,i) => { max += it.w; if (checked[d.key].has(i)) { s += it.w; if (it.w > 1) hasKey = true; } });
-      return { d, s, ratio: max ? s/max : 0, n: checked[d.key].size, hasKey };
+      SYMPTOMS.forEach((sym, i) => {
+        const w = sym.map[nu.key] || 0;
+        if (!w) return;
+        max += w;
+        if (checked.has(i)) { s += w; if (w >= 2) hasKey = true; }
+      });
+      return { nu, s, ratio: max ? s/max : 0, hasKey };
     }).filter(x => x.s > 0).sort((a,b) => b.ratio - a.ratio || b.s - a.s);
 
     const top = document.getElementById('top');
@@ -273,14 +264,14 @@
 
     if (scored.length === 0) {
       sub.textContent = '';
-      list.innerHTML = `<div class="empty">チェックが付いていません。<br>当てはまるものを選んでから「結果を見る」を押してね。</div>`;
+      list.innerHTML = `<div class="empty">チェックが付いていません。<br>当てはまる症状を選んでから「結果を見る」を押してね。</div>`;
       renderCombo(new Set());
     } else {
-      const t = scored[0];
-      top.innerHTML = `<div class="top"><div class="lbl">まず1個だけ埋めるなら</div><div class="name">${t.d.emoji} ${t.d.name}</div><div class="mini">${t.d.dose}</div></div>`;
-      sub.textContent = `当てはまりが多い順。くわしい解説は記事本文で、ここは要点と量だけ。`;
+      const t = scored[0].nu;
+      top.innerHTML = `<div class="top"><div class="lbl">まず1個だけ埋めるなら</div><div class="name">${t.emoji} ${t.name}</div><div class="mini">${t.dose}</div></div>`;
+      sub.textContent = `当てはまりが強い順に並べました。`;
       scored.forEach(x => {
-        const d = x.d, lv = levelOf(x.ratio, x.hasKey);
+        const d = x.nu, lv = levelOf(x.ratio, x.hasKey);
         const dots = [1,2,3].map(i => `<span class="dot ${i<=lv.n?'on':''}"></span>`).join('');
         const card = document.createElement('div');
         card.className = 'rcard';
@@ -288,7 +279,7 @@
         card.style.borderColor = d.color + '44';
         card.innerHTML = `
           <div class="rh">
-            <span class="gtile" style="background:#fff">${d.emoji}</span>
+            <span class="gtile">${d.emoji}</span>
             <span class="rn">${d.name}</span>
             <span class="meter" style="color:${d.color}"><span class="dots">${dots}</span><span class="lv">${lv.label}</span></span>
           </div>
@@ -297,7 +288,7 @@
           <div class="rtip">${d.tip}</div>`;
         list.appendChild(card);
       });
-      renderCombo(new Set(scored.map(x => x.d.key)));
+      renderCombo(new Set(scored.map(x => x.nu.key)));
     }
     const r = document.getElementById('result');
     r.classList.add('show');
@@ -305,7 +296,7 @@
   };
 
   document.getElementById('reset').onclick = () => {
-    DATA.forEach(d => checked[d.key].clear());
+    checked.clear();
     document.querySelectorAll('.item.on').forEach(el => el.classList.remove('on'));
     document.getElementById('result').classList.remove('show');
     updateProgress();
