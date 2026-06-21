@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>たりてないサプリ診断</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F1FB; --card:#fff; --ink:#33304A; --ink2:#6C6886; --ink3:#A29DBC;
+    --line:#E8E4F3; --v:#6A5BD0; --v50:#EFEDFB; --v700:#5446B6;
+    --shadow-sm:0 8px 20px -14px rgba(70,60,140,.4);
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent;}
+  body{font-family:'M PLUS Rounded 1c',system-ui,sans-serif; background:var(--bg); color:var(--ink);
+    line-height:1.6; padding:22px 16px 60px;}
+  .wrap{max-width:560px; margin:0 auto;}
+
+  header{text-align:center; margin-bottom:8px;}
+  h1{font-size:24px; font-weight:800; letter-spacing:.5px;}
+  .lead{font-size:13px; color:var(--ink2); margin-top:6px;}
+  .disc{font-size:11px; color:var(--ink3); margin-top:8px; line-height:1.5;}
+
+  .progress{position:sticky; top:0; z-index:5; background:var(--bg); padding:12px 0 10px; margin:14px 0 4px;}
+  .pbar{height:8px; background:var(--line); border-radius:999px; overflow:hidden;}
+  .pfill{height:100%; width:0; background:linear-gradient(90deg,#8779D6,#6A5BD0); border-radius:999px; transition:width .3s;}
+  .pcount{font-size:12px; color:var(--ink2); font-weight:700; margin-top:6px; text-align:center;}
+
+  .group{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:14px 16px;
+    margin-bottom:14px; box-shadow:var(--shadow-sm);}
+  .ghead{display:flex; align-items:center; gap:10px; margin-bottom:4px;}
+  .gtile{width:34px; height:34px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:18px; flex:none;}
+  .gname{font-size:15px; font-weight:800;}
+  .item{display:flex; align-items:center; gap:12px; padding:10px 4px; cursor:pointer; border-radius:12px;}
+  .item:active{background:var(--v50);}
+  .box{width:24px; height:24px; border-radius:8px; border:2px solid var(--line); flex:none;
+    display:flex; align-items:center; justify-content:center; transition:.12s;}
+  .item.on .box{background:var(--v); border-color:var(--v);}
+  .box svg{opacity:0; transition:.12s;}
+  .item.on .box svg{opacity:1;}
+  .item .txt{font-size:14px; font-weight:500;}
+  .item.on .txt{color:var(--ink); font-weight:700;}
+  .item .key{margin-left:auto; font-size:10px; font-weight:800; color:#C0556B; background:#FBE9EC; border-radius:999px; padding:2px 7px; flex:none;}
+
+  .btnrow{display:flex; gap:10px; margin:6px 0 20px;}
+  .btn{flex:1; border:none; border-radius:14px; padding:15px; font-family:inherit; font-size:15px; font-weight:800; cursor:pointer;}
+  .btn.primary{background:var(--v); color:#fff; box-shadow:0 10px 20px -10px rgba(106,91,208,.6);}
+  .btn.ghost{background:var(--card); color:var(--ink2); border:1px solid var(--line); flex:none; padding:15px 18px;}
+
+  #result{display:none; scroll-margin-top:80px;}
+  #result.show{display:block;}
+  .rtitle{font-size:18px; font-weight:800; margin:8px 0 4px; text-align:center;}
+  .rsub{font-size:12.5px; color:var(--ink2); text-align:center; margin-bottom:14px;}
+  .top{background:linear-gradient(135deg,#6A5BD0,#5446B6); color:#fff; border-radius:18px; padding:16px 18px; margin-bottom:16px; text-align:center;}
+  .top .lbl{font-size:11.5px; opacity:.85; font-weight:700;}
+  .top .name{font-size:20px; font-weight:800; margin:3px 0 2px;}
+  .top .mini{font-size:12px; opacity:.9;}
+
+  .rcard{border-radius:18px; padding:15px 16px; margin-bottom:12px; border:1px solid var(--line);}
+  .rcard .rh{display:flex; align-items:center; gap:9px; margin-bottom:8px;}
+  .rcard .rh .gtile{width:30px; height:30px; border-radius:10px; font-size:16px;}
+  .rcard .rn{font-size:15px; font-weight:800;}
+  .meter{margin-left:auto; display:flex; align-items:center; gap:6px;}
+  .meter .dots{display:flex; gap:3px;}
+  .meter .dot{width:9px; height:9px; border-radius:50%; background:#fff; border:1.5px solid currentColor;}
+  .meter .dot.on{background:currentColor;}
+  .meter .lv{font-size:11px; font-weight:800;}
+  .rcard .rtake{font-size:13.5px; font-weight:700; margin-bottom:6px;}
+  .dose{display:flex; align-items:center; gap:8px; background:#fff; border:1px solid var(--line); border-radius:12px; padding:9px 12px; margin-bottom:8px; font-size:12.5px;}
+  .dose b{color:var(--v700);}
+  .rcard .rtip{font-size:12.5px; color:var(--ink2);}
+  .empty{text-align:center; color:var(--ink2); font-size:14px; padding:24px 10px; background:var(--card); border:1px solid var(--line); border-radius:18px;}
+
+  .combo{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:16px 18px; margin-top:18px; box-shadow:var(--shadow-sm);}
+  .combo h2{font-size:15px; font-weight:800; margin-bottom:10px;}
+  .combo h3{font-size:12.5px; font-weight:800; color:var(--v700); margin:12px 0 5px;}
+  .combo li{font-size:13px; color:var(--ink2); margin-left:18px; margin-bottom:4px;}
+  .combo .fine{font-size:11.5px; color:var(--ink3); margin-top:12px; line-height:1.5;}
+  footer{text-align:center; font-size:11px; color:var(--ink3); margin-top:24px; line-height:1.6;}
+  .legend{font-size:11px; color:var(--ink3); text-align:center; margin:-2px 0 12px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>たりてないサプリ診断</h1>
+    <p class="lead">当てはまるものにチェック。あなたが“削れてるかも”な栄養と、目安の量まで出します。</p>
+    <p class="disc">※これは病気の診断ではなく、あくまで「栄養の目安」です。<br>気になる症状がある人・薬を飲んでいる人は、自己判断せず専門家（医師・薬剤師）に相談してください。</p>
+  </header>
+
+  <div class="progress">
+    <div class="pbar"><div class="pfill" id="pfill"></div></div>
+    <div class="pcount" id="pcount">チェック 0 個</div>
+  </div>
+  <p class="legend">🔑 マークは「その栄養を強く疑うサイン」（重みが大きい項目）</p>
+
+  <div id="groups"></div>
+
+  <div class="btnrow">
+    <button class="btn primary" id="go">結果を見る</button>
+    <button class="btn ghost" id="reset">リセット</button>
+  </div>
+
+  <div id="result">
+    <div class="rtitle">あなたの“たりてない”チェック結果</div>
+    <div class="rsub" id="rsub"></div>
+    <div id="top"></div>
+    <div id="rlist"></div>
+    <div class="combo" id="combo"></div>
+  </div>
+
+  <footer>サプリは“治す”じゃなく“足りないを埋める”もの。<br>削れてる1マスから、ゆっくり。</footer>
+</div>
+
+<script>
+  // w:2 = その栄養を強く示す“決定的サイン”、w:1 = 一般的なサイン
+  const DATA = [
+    { key:'iron', name:'鉄（フェリチン）', emoji:'🔋', color:'#C0556B', bg:'#FBE9EC',
+      dose:'1日1粒が目安（"低い人限定"。鉄は摂りすぎ注意）。',
+      take:'鉄（フェリチン）が削れてるかも。',
+      tip:'ビタミンCと一緒に／コーヒー・お茶は2時間あける。摂りすぎ注意なので、できれば血液検査でフェリチン確認を。',
+      items:[
+        {t:'疲れやすい・だるさが抜けない',w:1},
+        {t:'立ちくらみ・めまいがある',w:1},
+        {t:'顔色が悪いと言われる',w:1},
+        {t:'階段や坂で動悸・息切れ',w:1},
+        {t:'氷を無性に食べたくなる',w:2},
+        {t:'爪が割れやすい・反り返る',w:2},
+        {t:'生理が重い（経血が多い・長い）',w:1},
+        {t:'肉や魚をあまり食べない',w:1},
+      ]},
+    { key:'zinc', name:'亜鉛', emoji:'🛡️', color:'#4F76C0', bg:'#E7EDF9',
+      dose:'1日1粒が目安。長く続けるなら銅入りを。',
+      take:'亜鉛が削れてるかも。',
+      tip:'鉄・カルシウムと時間をずらすと吸収が落ちない。',
+      items:[
+        {t:'風邪をひきやすい・治りにくい',w:1},
+        {t:'傷や肌荒れの治りが遅い',w:1},
+        {t:'味やにおいが鈍くなった',w:2},
+        {t:'抜け毛が増えた・爪が弱い',w:1},
+        {t:'肌が荒れやすい・湿疹が出る',w:1},
+        {t:'やる気・活力が出にくい',w:1},
+        {t:'お酒をよく飲む',w:1},
+        {t:'運動でよく汗をかく',w:1},
+      ]},
+    { key:'vd', name:'ビタミンD', emoji:'☀️', color:'#E0A45A', bg:'#FBF0DF',
+      dose:'1日1粒が目安。',
+      take:'ビタミンDが削れてるかも。',
+      tip:'マグネシウムと一緒だと活きる。脂溶性なので食事と一緒に。',
+      items:[
+        {t:'日に当たる時間がほぼない',w:1},
+        {t:'室内で1日が終わる生活',w:1},
+        {t:'冬になると一気にだるい・落ちる',w:2},
+        {t:'気分が落ち込みやすい',w:1},
+        {t:'骨や筋肉がだるい・痛む',w:1},
+        {t:'疲れやすい・風邪をひきやすい',w:1},
+      ]},
+    { key:'mg', name:'マグネシウム', emoji:'🌙', color:'#6A5BD0', bg:'#ECE9FA',
+      dose:'1日1粒が目安（寝る前に）。',
+      take:'マグネシウム（＋B6）が削れてるかも。',
+      tip:'寝る前に。酸化Mgはお腹がゆるくなりがち。',
+      items:[
+        {t:'寝つきが悪い',w:1},
+        {t:'イライラ・気が休まらない',w:1},
+        {t:'まぶたや筋肉がピクピクする',w:2},
+        {t:'こむら返りになりやすい',w:2},
+        {t:'足がムズムズして眠れない',w:1},
+        {t:'便秘がち',w:1},
+        {t:'ストレス・カフェインが多い',w:1},
+      ]},
+    { key:'b', name:'ビタミンB群', emoji:'💊', color:'#AE5BA6', bg:'#F6E9F4',
+      dose:'1日2粒が目安（チョコラBBプラスは朝晩1錠ずつ）。',
+      take:'ビタミンB群（チョコラBB枠）が削れてるかも。',
+      tip:'地味だけど体感が出やすい枠。口内炎が減るだけで一日がラクに。',
+      items:[
+        {t:'口内炎ができやすい',w:2},
+        {t:'口角が切れる',w:2},
+        {t:'肌や粘膜が荒れがち',w:1},
+        {t:'疲れやすい',w:1},
+        {t:'お酒をよく飲む',w:1},
+        {t:'糖質・加工食品が多い',w:1},
+      ]},
+    { key:'o3', name:'オメガ3（EPA・DHA）', emoji:'🐟', color:'#3FA593', bg:'#E1F1EE',
+      dose:'1日1〜2粒が目安（食事と一緒に）。',
+      take:'オメガ3が削れてるかも。',
+      tip:'実は一番研究がある枠。食事と一緒に。',
+      items:[
+        {t:'魚をほとんど食べない',w:2},
+        {t:'外食・コンビニ中心',w:1},
+        {t:'肌が乾燥しやすい',w:1},
+        {t:'気分の波がある',w:1},
+      ]},
+  ];
+
+  const checked = {};
+  DATA.forEach(d => checked[d.key] = new Set());
+
+  const groups = document.getElementById('groups');
+  DATA.forEach(d => {
+    const g = document.createElement('div');
+    g.className = 'group';
+    g.innerHTML = `<div class="ghead"><span class="gtile" style="background:${d.bg}">${d.emoji}</span><span class="gname">${d.name}</span></div>`;
+    d.items.forEach((it, i) => {
+      const row = document.createElement('div');
+      row.className = 'item';
+      row.innerHTML = `<span class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 13l4 4L19 7"/></svg></span><span class="txt">${it.t}</span>${it.w>1?'<span class="key">🔑</span>':''}`;
+      row.onclick = () => {
+        if (checked[d.key].has(i)) { checked[d.key].delete(i); row.classList.remove('on'); }
+        else { checked[d.key].add(i); row.classList.add('on'); }
+        updateProgress();
+      };
+      g.appendChild(row);
+    });
+    groups.appendChild(g);
+  });
+
+  const total = DATA.reduce((s,d)=>s+d.items.length,0);
+  function updateProgress(){
+    const n = DATA.reduce((s,d)=>s+checked[d.key].size,0);
+    document.getElementById('pfill').style.width = (n/total*100) + '%';
+    document.getElementById('pcount').textContent = `チェック ${n} 個`;
+  }
+
+  const COMBO = {
+    synergy: [
+      { keys:['vd','mg'],  text:'ビタミンD × マグネシウム … Dを活かすのにマグネシウムが要る。相性◎' },
+      { keys:['iron'],     text:'鉄 × ビタミンC … Cが鉄の吸収を上げる' },
+      { keys:['vd','o3'],  text:'脂溶性（D・オメガ3）× 食事 … 油と一緒だと吸収が良い' },
+    ],
+    conflict: [
+      { keys:['iron','zinc'], text:'鉄 × 亜鉛 × カルシウム … 互いに吸収を邪魔する。同時に飲まない' },
+      { keys:['iron'],        text:'鉄 × コーヒー・お茶 … 2時間くらいあける' },
+    ],
+    timing: [
+      { keys:['vd','o3'],   text:'朝：ビタミンD、オメガ3（食事と一緒に）' },
+      { keys:['iron'],      text:'日中：鉄（単独＋ビタミンC、コーヒーと別に）' },
+      { keys:['mg','zinc'], text:'夜：マグネシウム（寝つきの下支え）、亜鉛' },
+    ],
+  };
+  function renderCombo(flaggedKeys){
+    const box = document.getElementById('combo');
+    const sec = (title, arr) => {
+      const hits = arr.filter(x => x.keys.some(k => flaggedKeys.has(k)));
+      return hits.length ? `<h3>${title}</h3><ul>${hits.map(x=>`<li>${x.text}</li>`).join('')}</ul>` : '';
+    };
+    const body = sec('伸びる組み合わせ', COMBO.synergy) + sec('時間をずらす', COMBO.conflict) + sec('飲む時間帯', COMBO.timing);
+    if (!body) { box.innerHTML = ''; return; }
+    box.innerHTML = `<h2>あなた向けの飲み合わせ</h2>${body}`
+      + `<p class="fine">チェックした栄養に関係するものだけ出してます。量は製品ごとに違うので、パッケージの「1日の目安量」に従ってください。<br><b style="color:var(--v700)">💊 薬を飲んでいる人は、サプリとの飲み合わせを必ず主治医・薬剤師に確認してください。</b></p>`;
+  }
+
+  // “高め”は🔑決定的サインがある時だけ＝何でも高めにならないように
+  function levelOf(ratio, hasKey){
+    if (ratio >= 0.6 && hasKey) return { n:3, label:'高め' };
+    if (ratio >= 0.35 || hasKey) return { n:2, label:'中くらい' };
+    return { n:1, label:'低め' };
+  }
+
+  document.getElementById('go').onclick = () => {
+    const scored = DATA.map(d => {
+      let s = 0, max = 0, hasKey = false;
+      d.items.forEach((it,i) => { max += it.w; if (checked[d.key].has(i)) { s += it.w; if (it.w > 1) hasKey = true; } });
+      return { d, s, ratio: max ? s/max : 0, n: checked[d.key].size, hasKey };
+    }).filter(x => x.s > 0).sort((a,b) => b.ratio - a.ratio || b.s - a.s);
+
+    const top = document.getElementById('top');
+    const sub = document.getElementById('rsub');
+    const list = document.getElementById('rlist');
+    list.innerHTML = ''; top.innerHTML = '';
+
+    if (scored.length === 0) {
+      sub.textContent = '';
+      list.innerHTML = `<div class="empty">チェックが付いていません。<br>当てはまるものを選んでから「結果を見る」を押してね。</div>`;
+      renderCombo(new Set());
+    } else {
+      const t = scored[0];
+      top.innerHTML = `<div class="top"><div class="lbl">まず1個だけ埋めるなら</div><div class="name">${t.d.emoji} ${t.d.name}</div><div class="mini">${t.d.dose}</div></div>`;
+      sub.textContent = `当てはまりが多い順。くわしい解説は記事本文で、ここは要点と量だけ。`;
+      scored.forEach(x => {
+        const d = x.d, lv = levelOf(x.ratio, x.hasKey);
+        const dots = [1,2,3].map(i => `<span class="dot ${i<=lv.n?'on':''}"></span>`).join('');
+        const card = document.createElement('div');
+        card.className = 'rcard';
+        card.style.background = d.bg;
+        card.style.borderColor = d.color + '44';
+        card.innerHTML = `
+          <div class="rh">
+            <span class="gtile" style="background:#fff">${d.emoji}</span>
+            <span class="rn">${d.name}</span>
+            <span class="meter" style="color:${d.color}"><span class="dots">${dots}</span><span class="lv">${lv.label}</span></span>
+          </div>
+          <div class="rtake" style="color:${d.color}">${d.take}</div>
+          <div class="dose">💊 <span><b>目安の量：</b>${d.dose}</span></div>
+          <div class="rtip">${d.tip}</div>`;
+        list.appendChild(card);
+      });
+      renderCombo(new Set(scored.map(x => x.d.key)));
+    }
+    const r = document.getElementById('result');
+    r.classList.add('show');
+    r.scrollIntoView({ behavior:'smooth', block:'start' });
+  };
+
+  document.getElementById('reset').onclick = () => {
+    DATA.forEach(d => checked[d.key].clear());
+    document.querySelectorAll('.item.on').forEach(el => el.classList.remove('on'));
+    document.getElementById('result').classList.remove('show');
+    updateProgress();
+    window.scrollTo({ top:0, behavior:'smooth' });
+  };
+</script>
+</body>
+</html>
